@@ -1,0 +1,18 @@
+Marry_Me_Chicken:
+    kylling_file 600 g
+    salt
+    pepper
+    paprikapulver
+    olje
+    løk 2 stk
+    hvitløk
+    oregano
+    chilipulver
+    tomatpurè
+    soltørkede_tomater
+    kremfløte 3 dl
+    parmesan 50 g
+    spinat 100 g
+    sitron
+    basilikum
+

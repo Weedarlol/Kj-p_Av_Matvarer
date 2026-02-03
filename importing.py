@@ -2,7 +2,7 @@ import requests
 import googlemaps
 from datetime import datetime
 
-def fetch_nearby_stores(address, API_KEY_CLOUD, API_KEY_KASSAL):
+def fetch_nearby_stores(address, API_KEY_CLOUD, kassal_header):
     kassal_url = "https://kassal.app/api/v1/physical-stores"
     gmaps = googlemaps.Client(key=API_KEY_CLOUD)
     
@@ -17,10 +17,6 @@ def fetch_nearby_stores(address, API_KEY_CLOUD, API_KEY_KASSAL):
         print("Location not found")
         return None, None
 
-    headers = {
-        "Authorization": f"Bearer {API_KEY_KASSAL}"
-    }
-
     params = {
         "lat": lat,
         "lng": lng,
@@ -28,12 +24,11 @@ def fetch_nearby_stores(address, API_KEY_CLOUD, API_KEY_KASSAL):
     }
 
     try:
-        response = requests.get(kassal_url, headers=headers, params=params)
+        response = requests.get(kassal_url, headers=kassal_header, params=params)
         response.raise_for_status()  # Raises an HTTPError for bad responses
         data = response.json()
         unique_stores = []
         for store in data["data"]:
-            # Extract specific fields
             if store.get("name", "N/A") not in unique_stores:
                 unique_stores.append(store.get("name", "N/A"))
         return unique_stores
@@ -41,9 +36,7 @@ def fetch_nearby_stores(address, API_KEY_CLOUD, API_KEY_KASSAL):
         print(f"An error occurred: {e}")
         return None
 
-
 def find_distance(unique_stores, address, API_KEY_CLOUD):
-    # Replace with your API key
     gmaps = googlemaps.Client(key=API_KEY_CLOUD)
 
     stores = []
@@ -55,9 +48,8 @@ def find_distance(unique_stores, address, API_KEY_CLOUD):
         directions_result = gmaps.directions(
             address,
             destination,
-            mode="walking",  # Specify walking mode
-            avoid="ferries", # Optional: avoid ferries if needed
-            units="metric"   # Use 'imperial' for miles
+            mode="walking",  # We want to walk
+            units="metric"   # Type of mesurement
         )
 
         # Extract distance and duration
@@ -73,20 +65,55 @@ def find_distance(unique_stores, address, API_KEY_CLOUD):
     
     return stores
 
+def fetch_ingridients(dinner):
+    with open("Oppskrifter.txt", "r") as file:
+        lines = file.readlines()
+    
+    ingridients = []
+    found_recepie = False
+    print(lines)
+
+def find_ingridients(kassal_header):
+    kassal_url = " https://kassal.app/api/v1/products"
+
+    params = {
+        "search": "chicken",
+        "sort": "price_asc"
+    }
+
+    try:
+        response = requests.get(kassal_url, headers=kassal_header, params=params)
+        response.raise_for_status()  # Raises an HTTPError for bad responses
+    except requests.exceptions.RequestException as e:
+        print(f"An error occurred: {e}")
+        return None
 
 
 if __name__ == "__main__":
     address = "Kråkstadveien 7A, Norway"
 
-    API_KEY_CLOUD = 'AIzaSyC65V2O-yb2SUoxx_FxEyoZ2fSTMcHGN7U'
-    API_KEY_KASSAL = 'J7pwxRQLc1n3CrqpLFjObxciLEeXlrdSNef6cm6p'
+    with open('../keys/CLOUD_KEY.txt', 'r') as file:
+        API_KEY_CLOUD = file.read().strip()
 
-    unique_stores = fetch_nearby_stores(address, API_KEY_CLOUD, API_KEY_KASSAL)
+    with open('../keys/KASSAL_KEY.txt', 'r') as file:
+        API_KEY_KASSAL = file.read().strip()
+
+    kassal_header = {
+        "Authorization": f"Bearer {API_KEY_KASSAL}"
+    }
+
+    unique_stores = fetch_nearby_stores(address, API_KEY_CLOUD, kassal_header)
+
+    find_ingridients(API_KEY_KASSAL)
     
-    stores = find_distance(unique_stores, address, API_KEY_CLOUD)
+    #stores = find_distance(unique_stores, address, API_KEY_CLOUD)
 
-    for i in stores:
-        print(i)
+    #dinner = "Marry_Me_Chicken"
+
+    #ingridients = fetch_ingridients(dinner)
+
+    #for i in stores:
+    #    print(i)
 
     
 
